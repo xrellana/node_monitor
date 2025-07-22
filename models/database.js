@@ -3,8 +3,16 @@ const path = require('path');
 
 class Database {
   constructor() {
-    const dbPath = path.join(__dirname, '..', 'db', 'monitor.db');
-    this.db = new sqlite3.Database(dbPath);
+    const dbPath = process.env.DB_PATH || path.join(__dirname, '..', 'db', 'monitor.db');
+    console.log('Database path:', dbPath);
+    this.db = new sqlite3.Database(dbPath, (err) => {
+      if (err) {
+        console.error('Error opening database:', err.message);
+        throw err;
+      } else {
+        console.log('Connected to SQLite database at:', dbPath);
+      }
+    });
   }
 
   // 服务器管理

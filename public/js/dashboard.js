@@ -1,7 +1,7 @@
 class ServerMonitor {
     constructor() {
         this.servers = new Map();
-        this.updateInterval = 3000;
+        this.updateInterval = 30000;
         this.updateTimer = null;
         this.init();
     }

@@ -1,7 +1,15 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const fs = require('fs');
 
-const dbPath = path.join(__dirname, '..', 'db', 'monitor.db');
+const dbDir = path.join(__dirname, '..', 'db');
+const dbPath = path.join(dbDir, 'monitor.db');
+
+// 确保db目录存在
+if (!fs.existsSync(dbDir)) {
+  fs.mkdirSync(dbDir, { recursive: true });
+  console.log('Created db directory');
+}
 
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {

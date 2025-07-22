@@ -1,9 +1,17 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const fs = require('fs');
 
 class Database {
   constructor() {
-    const dbPath = process.env.DB_PATH || path.join(__dirname, '..', 'db', 'monitor.db');
+    const dbDir = path.join(__dirname, '..', 'db');
+    const dbPath = process.env.DB_PATH || path.join(dbDir, 'monitor.db');
+    
+    // 确保db目录存在
+    if (!fs.existsSync(dbDir)) {
+      fs.mkdirSync(dbDir, { recursive: true });
+    }
+    
     console.log('Database path:', dbPath);
     this.db = new sqlite3.Database(dbPath, (err) => {
       if (err) {

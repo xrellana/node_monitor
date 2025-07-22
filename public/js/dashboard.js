@@ -16,6 +16,11 @@ class ServerMonitor {
             const response = await fetch('/api/servers');
             const servers = await response.json();
             
+            // 清空现有卡片和服务器映射
+            const container = document.getElementById('servers-container');
+            container.innerHTML = '';
+            this.servers.clear();
+            
             servers.forEach(server => {
                 this.addServerCard(server);
                 this.servers.set(server.id, {

@@ -1,9 +1,7 @@
 const express = require('express');
 const axios = require('axios');
 const router = express.Router();
-const Database = require('../models/database');
-
-const db = new Database();
+const db = require('../models/database');
 
 // 代理获取metrics数据
 router.get('/metrics/:serverId', async (req, res) => {

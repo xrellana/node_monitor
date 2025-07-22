@@ -1,8 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const Database = require('../models/database');
-
-const db = new Database();
+const db = require('../models/database');
 
 // 获取所有服务器
 router.get('/servers', async (req, res) => {

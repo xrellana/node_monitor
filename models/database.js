@@ -109,4 +109,6 @@ class Database {
   }
 }
 
-module.exports = Database;
+// 创建单例实例
+const dbInstance = new Database();
+module.exports = dbInstance;

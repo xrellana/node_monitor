@@ -10,6 +10,10 @@ COPY package*.json ./
 # Install dependencies
 RUN npm ci --omit=dev
 
+# Create non-root user and group
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodeuser -u 1001 -G nodejs
+
 # Create database directory and set permissions
 RUN mkdir -p /app/db && \
     chown -R nodeuser:nodejs /app/db && \

@@ -4,6 +4,9 @@ FROM node:18-alpine
 # Set working directory in container
 WORKDIR /app
 
+# Install wget for healthcheck
+RUN apk add --no-cache wget
+
 # Copy package files
 COPY package*.json ./
 
@@ -16,15 +19,25 @@ RUN addgroup -g 1001 -S nodejs && \
 
 # Create database directory and set permissions
 RUN mkdir -p /app/db && \
-    chown -R nodeuser:nodejs /app/db && \
+    chown -R nodeuser:nodejs /app && \
     chmod 755 /app/db
 
 # Copy application code
 COPY --chown=nodeuser:nodejs . .
 
-# Initialize database as nodeuser
+# Switch to non-root user
 USER nodeuser
-RUN node scripts/init-db.js
+
+# Set environment variables
+ENV NODE_ENV=production
+ENV DB_PATH=/app/db/monitor.db
+
+# Create database directory with correct permissions
+RUN mkdir -p /app/db && \
+    node scripts/init-db.js
+
+# Expose port
+EXPOSE 3000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \

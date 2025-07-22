@@ -10,22 +10,17 @@ COPY package*.json ./
 # Install dependencies
 RUN npm ci --omit=dev
 
+# Create database directory and set permissions
+RUN mkdir -p /app/db && \
+    chown -R nodeuser:nodejs /app/db && \
+    chmod 755 /app/db
+
 # Copy application code
-COPY . .
+COPY --chown=nodeuser:nodejs . .
 
-# Create database directory and initialize
-RUN mkdir -p /app/db && node scripts/init-db.js
-
-# Expose port
-EXPOSE 3000
-
-# Create non-root user
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nodeuser -u 1001
-
-# Change ownership of the app directory
-RUN chown -R nodeuser:nodejs /app
+# Initialize database as nodeuser
 USER nodeuser
+RUN node scripts/init-db.js
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \

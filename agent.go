@@ -174,7 +174,7 @@ func getMetrics() (*Metrics, error) {
 	}
 
 	// Memory metrics
-	mem, err := mem.VirtualMemory()
+	memInfo, err := mem.VirtualMemory()
 	if err != nil {
 		return nil, err
 	}
@@ -254,10 +254,10 @@ func getMetrics() (*Metrics, error) {
 			},
 		},
 		Memory: MemoryInfo{
-			TotalGB:     roundFloat(float64(mem.Total)/(1024*1024*1024), 2),
-			UsedGB:      roundFloat(float64(mem.Used)/(1024*1024*1024), 2),
-			AvailableGB: roundFloat(float64(mem.Available)/(1024*1024*1024), 2),
-			Percent:     roundFloat(mem.UsedPercent, 2),
+			TotalGB:     roundFloat(float64(memInfo.Total)/(1024*1024*1024), 2),
+			UsedGB:      roundFloat(float64(memInfo.Used)/(1024*1024*1024), 2),
+			AvailableGB: roundFloat(float64(memInfo.Available)/(1024*1024*1024), 2),
+			Percent:     roundFloat(memInfo.UsedPercent, 2),
 			SwapTotalGB: roundFloat(float64(swap.Total)/(1024*1024*1024), 2),
 			SwapUsedGB:  roundFloat(float64(swap.Used)/(1024*1024*1024), 2),
 			SwapPercent: roundFloat(swap.UsedPercent, 2),

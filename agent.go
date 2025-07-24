@@ -295,8 +295,8 @@ func metricsHandler(w http.ResponseWriter, r *http.Request) {
 func main() {
 	http.HandleFunc("/metrics", metricsHandler)
 
-	fmt.Println("Server monitoring agent starting on port 8080...")
-	fmt.Println("Metrics endpoint: http://localhost:8080/metrics")
+	fmt.Println("Server monitoring agent starting on port 5000...")
+	fmt.Println("Metrics endpoint: http://localhost:5000/metrics")
 	
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe(":5000", nil))
 }

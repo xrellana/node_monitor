@@ -287,10 +287,10 @@ class ServerMonitor {
         updateText('mem-total', data.memory.total_gb);
 
         // Swap
-        if (data.swap) {
-            updateProgress('swap-percent', data.swap.percent);
-            updateText('swap-used', data.swap.used_gb);
-            updateText('swap-total', data.swap.total_gb);
+        if (data.memory.swap_percent !== undefined) {
+            updateProgress('swap-percent', data.memory.swap_percent);
+            updateText('swap-used', data.memory.swap_used_gb);
+            updateText('swap-total', data.memory.swap_total_gb);
         }
 
         // Disk

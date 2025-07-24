@@ -127,6 +127,24 @@ class ServerMonitor {
                         <span data-metric="mem-total">--</span> GB
                     </div>
                 </div>
+                
+                <!-- Swap -->
+                <div class="metric-item">
+                    <div class="metric-header">
+                        <span class="metric-label">Swap</span>
+                        <span class="metric-value" data-metric="swap-percent">--</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" data-metric="swap-percent-fill"></div>
+                    </div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-label">Swap Used / Total</div>
+                    <div class="details-text">
+                        <span data-metric="swap-used">--</span> /
+                        <span data-metric="swap-total">--</span> GB
+                    </div>
+                </div>
 
                 <!-- Disk -->
                 <div class="metric-item">
@@ -227,6 +245,11 @@ class ServerMonitor {
         updateProgress('mem-percent', data.memory.percent);
         updateText('mem-used', data.memory.used_gb);
         updateText('mem-total', data.memory.total_gb);
+
+        // Swap
+        updateProgress('swap-percent', data.memory.swap_percent);
+        updateText('swap-used', data.memory.swap_used_gb);
+        updateText('swap-total', data.memory.swap_total_gb);
 
         // Disk
         updateProgress('disk-percent', data.disk.percent);

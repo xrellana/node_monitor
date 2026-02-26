@@ -153,13 +153,18 @@
                         </button>
                     </div>
                     <button
-                        class="btn btn-primary btn-sm md:btn-md rounded-full shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-0.5 transition-all"
+                        class="btn btn-sm md:btn-md h-9 md:h-10 px-4 md:px-5 rounded-full border-0 bg-gradient-to-r from-primary to-secondary text-primary-content shadow-[0_0_15px_rgba(var(--p),0.3)] hover:shadow-[0_0_25px_rgba(var(--p),0.5)] hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden group"
                         id="add-server-btn">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
+                        <!-- Glassmorphic highlight overlay -->
+                        <div
+                            class="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        </div>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                            class="w-5 h-5 relative z-10 transition-transform group-hover:rotate-90 duration-300">
                             <path
                                 d="M10.75 4.75a.75.75 0 0 0-1.5 0v4.5h-4.5a.75.75 0 0 0 0 1.5h4.5v4.5a.75.75 0 0 0 1.5 0v-4.5h4.5a.75.75 0 0 0 0-1.5h-4.5v-4.5Z" />
                         </svg>
-                        Add Server
+                        <span class="relative z-10 font-medium">Add Server</span>
                     </button>
                 </div>
             </div>

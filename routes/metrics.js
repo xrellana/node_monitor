@@ -35,7 +35,7 @@ router.get('/metrics/:serverId', async (req, res) => {
     let errorMessage = 'Failed to fetch metrics';
     if (error.code === 'ECONNREFUSED') {
       errorMessage = 'Connection refused';
-    } else if (error.code === 'ETIMEDOUT') {
+    } else if (error.code === 'ETIMEDOUT' || error.code === 'ECONNABORTED') {
       errorMessage = 'Connection timeout';
     } else if (error.response) {
       errorMessage = `HTTP ${error.response.status}`;

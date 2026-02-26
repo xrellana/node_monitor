@@ -20,6 +20,8 @@ const db = new sqlite3.Database(dbPath, (err) => {
 });
 
 db.serialize(() => {
+  db.run('PRAGMA foreign_keys = ON');
+
   db.run(`
     CREATE TABLE IF NOT EXISTS servers (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -42,7 +44,7 @@ db.serialize(() => {
       server_id INTEGER,
       data TEXT,
       cached_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (server_id) REFERENCES servers (id)
+      FOREIGN KEY (server_id) REFERENCES servers (id) ON DELETE CASCADE
     )
   `, (err) => {
     if (err) {

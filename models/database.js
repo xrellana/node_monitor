@@ -21,6 +21,7 @@ class Database {
         console.log('Connected to SQLite database at:', dbPath);
       }
     });
+    this.db.run('PRAGMA foreign_keys = ON');
   }
 
   // 服务器管理
@@ -57,9 +58,18 @@ class Database {
 
   removeServer(id) {
     return new Promise((resolve, reject) => {
-      this.db.run('DELETE FROM servers WHERE id = ?', [id], function(err) {
-        if (err) reject(err);
-        else resolve(this.changes);
+      this.db.serialize(() => {
+        this.db.run('DELETE FROM metrics_cache WHERE server_id = ?', [id], (cacheErr) => {
+          if (cacheErr) {
+            reject(cacheErr);
+            return;
+          }
+
+          this.db.run('DELETE FROM servers WHERE id = ?', [id], function(serverErr) {
+            if (serverErr) reject(serverErr);
+            else resolve(this.changes);
+          });
+        });
       });
     });
   }

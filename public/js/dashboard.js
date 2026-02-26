@@ -17,6 +17,7 @@ class ServerMonitor {
             const servers = await response.json();
             
             // 清空现有卡片和服务器映射
+            this.stopMonitoring();
             const container = document.getElementById('servers-container');
             container.innerHTML = '';
             this.servers.clear();
@@ -79,6 +80,9 @@ class ServerMonitor {
                         element: document.querySelector(`[data-server-id="${newServer.id}"]`),
                         lastUpdate: null
                     });
+                    if (!this.updateTimer) {
+                        this.startMonitoring();
+                    }
 
                     document.getElementById('add-server-modal').classList.remove('show');
                     e.target.reset();
@@ -94,15 +98,17 @@ class ServerMonitor {
     }
 
     createServerCard(server) {
+        const serverName = this.escapeHtml(server.name);
+        const serverUrl = this.escapeHtml(server.url);
         const card = document.createElement('div');
         card.className = 'server-card';
         card.setAttribute('data-server-id', server.id);
         card.innerHTML = `
             <div class="server-header">
-                <h3>${server.name}</h3>
+                <h3>${serverName}</h3>
                 <button class="remove-btn" onclick="monitor.removeServer(${server.id})">×</button>
             </div>
-            <div class="server-url">${server.url}</div>
+            <div class="server-url">${serverUrl}</div>
             <div class="metrics-grid">
                 <!-- CPU -->
                 <div class="metric-item">
@@ -220,6 +226,9 @@ class ServerMonitor {
                 if (server) {
                     server.element.remove();
                     this.servers.delete(serverId);
+                    if (this.servers.size === 0) {
+                        this.stopMonitoring();
+                    }
                 }
             } else {
                 alert('Failed to remove server');
@@ -316,12 +325,10 @@ class ServerMonitor {
             data.gpu.gpus.forEach(gpu => {
                 const gpuEl = document.createElement('div');
                 gpuEl.classList.add('gpu-item');
-                gpuEl.innerHTML = `
-                    <strong>${gpu.name}</strong>:
-                    Load: <strong>${gpu.load.toFixed(1)}%</strong> |
-                    Temp: <strong>${gpu.temperature}°C</strong> |
-                    Mem: <strong>${(gpu.memory_used / 1024).toFixed(1)}/${(gpu.memory_total / 1024).toFixed(1)} GB</strong>
-                `;
+                gpuEl.textContent =
+                    `${gpu.name}: Load ${gpu.load.toFixed(1)}% | ` +
+                    `Temp ${gpu.temperature}°C | ` +
+                    `Mem ${(gpu.memory_used / 1024).toFixed(1)}/${(gpu.memory_total / 1024).toFixed(1)} GB`;
                 gpuDetails.appendChild(gpuEl);
             });
         } else {
@@ -349,7 +356,7 @@ class ServerMonitor {
     }
 
     startMonitoring() {
-        if (this.servers.size > 0) {
+        if (!this.updateTimer && this.servers.size > 0) {
             this.updateAllServers();
             this.updateTimer = setInterval(() => this.updateAllServers(), this.updateInterval);
         }
@@ -360,6 +367,15 @@ class ServerMonitor {
             clearInterval(this.updateTimer);
             this.updateTimer = null;
         }
+    }
+
+    escapeHtml(value) {
+        return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
     }
 }
 

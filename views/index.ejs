@@ -29,17 +29,63 @@
         (() => {
             const root = document.documentElement;
             const media = window.matchMedia('(prefers-color-scheme: dark)');
+            const storageKey = 'theme-preference';
+            const validPreferences = new Set(['system', 'light', 'dark']);
 
-            const applyTheme = () => {
-                root.setAttribute('data-theme', media.matches ? 'dim' : 'light');
+            const normalizePreference = (value) => validPreferences.has(value) ? value : 'system';
+            const resolveTheme = (preference) => {
+                if (preference === 'light') return 'light';
+                if (preference === 'dark') return 'dim';
+                return media.matches ? 'dim' : 'light';
             };
 
-            applyTheme();
+            const readStoredPreference = () => {
+                try {
+                    return normalizePreference(localStorage.getItem(storageKey) || 'system');
+                } catch (error) {
+                    return 'system';
+                }
+            };
+
+            const applyTheme = (preference) => {
+                const normalized = normalizePreference(preference);
+                const theme = resolveTheme(normalized);
+                root.dataset.themePreference = normalized;
+                root.setAttribute('data-theme', theme);
+                document.dispatchEvent(new CustomEvent('theme-preference-change', {
+                    detail: { preference: normalized, theme }
+                }));
+            };
+
+            const setPreference = (preference) => {
+                const normalized = normalizePreference(preference);
+                try {
+                    localStorage.setItem(storageKey, normalized);
+                } catch (error) {
+                    // Ignore storage failures and continue with in-memory state.
+                }
+                applyTheme(normalized);
+            };
+
+            const currentPreference = readStoredPreference();
+            applyTheme(currentPreference);
+
+            const handleSystemChange = () => {
+                if ((root.dataset.themePreference || 'system') === 'system') {
+                    applyTheme('system');
+                }
+            };
+
             if (typeof media.addEventListener === 'function') {
-                media.addEventListener('change', applyTheme);
+                media.addEventListener('change', handleSystemChange);
             } else if (typeof media.addListener === 'function') {
-                media.addListener(applyTheme);
+                media.addListener(handleSystemChange);
             }
+
+            window.__themeControls = {
+                getPreference: () => normalizePreference(root.dataset.themePreference || 'system'),
+                setPreference
+            };
         })();
     </script>
 </head>
@@ -47,7 +93,14 @@
     <header class="sticky top-0 z-20 border-b border-base-300 bg-base-100/95 backdrop-blur">
         <div class="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-4 md:px-8">
             <h1 class="text-xl font-semibold md:text-2xl">Server Monitor</h1>
-            <button class="btn btn-primary btn-sm md:btn-md" id="add-server-btn">+ Add Server</button>
+            <div class="flex items-center gap-2">
+                <div class="join" role="group" aria-label="Theme preference">
+                    <button type="button" class="btn btn-sm join-item" data-theme-option="system">System</button>
+                    <button type="button" class="btn btn-sm join-item" data-theme-option="light">Light</button>
+                    <button type="button" class="btn btn-sm join-item" data-theme-option="dark">Dark</button>
+                </div>
+                <button class="btn btn-primary btn-sm md:btn-md" id="add-server-btn">+ Add Server</button>
+            </div>
         </div>
     </header>
 
@@ -187,6 +240,39 @@
         <p>&copy; 2025 Server Monitor</p>
     </footer>
 
+    <script>
+        (() => {
+            const controls = window.__themeControls;
+            const buttons = Array.from(document.querySelectorAll('[data-theme-option]'));
+            if (!controls || buttons.length === 0) return;
+
+            const validPreferences = new Set(['system', 'light', 'dark']);
+            const normalizePreference = (value) => validPreferences.has(value) ? value : 'system';
+
+            const setActiveButton = (preference) => {
+                const normalized = normalizePreference(preference);
+                buttons.forEach((button) => {
+                    const active = button.dataset.themeOption === normalized;
+                    button.classList.toggle('btn-active', active);
+                    button.setAttribute('aria-pressed', String(active));
+                });
+            };
+
+            setActiveButton(controls.getPreference());
+
+            buttons.forEach((button) => {
+                button.addEventListener('click', () => {
+                    const preference = normalizePreference(button.dataset.themeOption);
+                    controls.setPreference(preference);
+                    setActiveButton(preference);
+                });
+            });
+
+            document.addEventListener('theme-preference-change', (event) => {
+                setActiveButton(event.detail?.preference);
+            });
+        })();
+    </script>
     <script src="/js/dashboard.js?v=1.0.0"></script>
 </body>
 </html>

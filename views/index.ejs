@@ -35,8 +35,8 @@
             const normalizePreference = (value) => validPreferences.has(value) ? value : 'system';
             const resolveTheme = (preference) => {
                 if (preference === 'light') return 'light';
-                if (preference === 'dark') return 'dim';
-                return media.matches ? 'dim' : 'light';
+                if (preference === 'dark') return 'dark';
+                return media.matches ? 'dark' : 'light';
             };
 
             const readStoredPreference = () => {

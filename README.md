@@ -52,22 +52,43 @@ Agent Servers (via /api/metrics)
 
 ```
 server-monitor/
-├── server.js              # Express server
-├── package.json           # Dependencies
+├── server.js                 # Express server
+├── package.json              # Dependencies
 ├── models/
-│   └── database.js       # Database operations
+│   └── database.js           # Database operations
 ├── routes/
-│   ├── servers.js        # Server management API
-│   └── metrics.js        # Metrics proxy API
+│   ├── servers.js            # Server management API
+│   └── metrics.js            # Metrics proxy API
 ├── views/
-│   └── index.ejs         # Server-side template
+│   └── index.ejs             # Server-side template
 ├── public/
 │   └── js/
-│       └── dashboard.js  # Frontend JavaScript
+│       └── dashboard.js      # Frontend JavaScript
 ├── scripts/
-│   └── init-db.js        # Database initialization
+│   └── init-db.js            # Database initialization
+├── agents/
+│   ├── go/
+│   │   ├── agent.go          # Go monitoring agent
+│   │   └── go.mod            # Go module definition
+│   └── python/
+│       └── agent.py          # Python monitoring agent
 └── db/
-    └── monitor.db        # SQLite database
+    └── monitor.db            # SQLite database
+```
+
+## ▶️ Run Agent Examples
+
+### Go Agent
+```bash
+cd agents/go
+go mod tidy
+go run agent.go
+```
+
+### Python Agent
+```bash
+pip install flask flask-cors psutil GPUtil
+python agents/python/agent.py
 ```
 
 ## 🎯 Adding Servers

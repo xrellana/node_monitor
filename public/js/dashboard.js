@@ -3,6 +3,7 @@ class ServerMonitor {
         this.servers = new Map();
         this.updateInterval = 10000;
         this.updateTimer = null;
+        this.cardTemplate = document.getElementById('server-card-template');
         this.init();
     }
 
@@ -23,10 +24,10 @@ class ServerMonitor {
             this.servers.clear();
             
             servers.forEach(server => {
-                this.addServerCard(server);
+                const card = this.addServerCard(server);
                 this.servers.set(server.id, {
                     ...server,
-                    element: document.querySelector(`[data-server-id="${server.id}"]`),
+                    element: card,
                     lastUpdate: null
                 });
             });
@@ -40,6 +41,7 @@ class ServerMonitor {
     addServerCard(server) {
         const card = this.createServerCard(server);
         document.getElementById('servers-container').appendChild(card);
+        return card;
     }
 
     setupEventListeners() {
@@ -48,10 +50,19 @@ class ServerMonitor {
         const closeBtn = modal.querySelector('.close');
         const form = document.getElementById('add-server-form');
 
-        addBtn.addEventListener('click', () => modal.classList.add('show'));
-        closeBtn.addEventListener('click', () => modal.classList.remove('show'));
+        addBtn.addEventListener('click', () => {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        });
+        closeBtn.addEventListener('click', () => {
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+        });
         window.addEventListener('click', (e) => {
-            if (e.target === modal) modal.classList.remove('show');
+            if (e.target === modal) {
+                modal.classList.remove('flex');
+                modal.classList.add('hidden');
+            }
         });
 
         form.addEventListener('submit', (e) => this.handleAddServer(e));
@@ -74,17 +85,19 @@ class ServerMonitor {
 
                 if (response.ok) {
                     const newServer = await response.json();
-                    this.addServerCard(newServer);
+                    const card = this.addServerCard(newServer);
                     this.servers.set(newServer.id, {
                         ...newServer,
-                        element: document.querySelector(`[data-server-id="${newServer.id}"]`),
+                        element: card,
                         lastUpdate: null
                     });
                     if (!this.updateTimer) {
                         this.startMonitoring();
                     }
 
-                    document.getElementById('add-server-modal').classList.remove('show');
+                    const modal = document.getElementById('add-server-modal');
+                    modal.classList.remove('flex');
+                    modal.classList.add('hidden');
                     e.target.reset();
                 } else {
                     const error = await response.json();
@@ -98,116 +111,18 @@ class ServerMonitor {
     }
 
     createServerCard(server) {
-        const serverName = this.escapeHtml(server.name);
-        const serverUrl = this.escapeHtml(server.url);
-        const card = document.createElement('div');
-        card.className = 'server-card';
+        if (!this.cardTemplate) {
+            throw new Error('Missing #server-card-template in page');
+        }
+
+        const card = this.cardTemplate.content.firstElementChild.cloneNode(true);
         card.setAttribute('data-server-id', server.id);
-        card.innerHTML = `
-            <div class="server-header">
-                <h3>${serverName}</h3>
-                <button class="remove-btn" onclick="monitor.removeServer(${server.id})">×</button>
-            </div>
-            <div class="server-url">${serverUrl}</div>
-            <div class="metrics-grid">
-                <!-- CPU -->
-                <div class="metric-item">
-                    <div class="metric-header">
-                        <span class="metric-label">CPU Usage</span>
-                        <span class="metric-value" data-metric="cpu-percent">--</span>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" data-metric="cpu-percent-fill"></div>
-                    </div>
-                </div>
-                <div class="metric-item">
-                    <div class="metric-label">Load Average (1/5/15m)</div>
-                    <div class="details-text load-average">
-                        <span data-metric="load1">--</span>
-                        <span data-metric="load5">--</span>
-                        <span data-metric="load15">--</span>
-                    </div>
-                </div>
+        card.querySelector('[data-field="server-name"]').textContent = server.name;
+        card.querySelector('[data-field="server-url"]').textContent = server.url;
 
-                <!-- Memory -->
-                <div class="metric-item">
-                    <div class="metric-header">
-                        <span class="metric-label">Memory</span>
-                        <span class="metric-value" data-metric="mem-percent">--</span>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" data-metric="mem-percent-fill"></div>
-                    </div>
-                </div>
-                <div class="metric-item">
-                    <div class="metric-label">Used / Total</div>
-                    <div class="details-text">
-                        <span data-metric="mem-used">--</span> /
-                        <span data-metric="mem-total">--</span> GB
-                    </div>
-                </div>
+        const removeButton = card.querySelector('[data-action="remove-server"]');
+        removeButton.addEventListener('click', () => this.removeServer(server.id));
 
-                <!-- Swap -->
-                <div class="metric-item">
-                    <div class="metric-header">
-                        <span class="metric-label">Swap</span>
-                        <span class="metric-value" data-metric="swap-percent">--</span>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" data-metric="swap-percent-fill"></div>
-                    </div>
-                </div>
-                <div class="metric-item">
-                    <div class="metric-label">Used / Total</div>
-                    <div class="details-text">
-                        <span data-metric="swap-used">--</span> /
-                        <span data-metric="swap-total">--</span> GB
-                    </div>
-                </div>
-
-                <!-- Disk -->
-                <div class="metric-item">
-                    <div class="metric-header">
-                        <span class="metric-label">Disk</span>
-                        <span class="metric-value" data-metric="disk-percent">--</span>
-                    </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" data-metric="disk-percent-fill"></div>
-                    </div>
-                </div>
-                <div class="metric-item">
-                    <div class="metric-label">Used / Total</div>
-                    <div class="details-text">
-                        <span data-metric="disk-used">--</span> /
-                        <span data-metric="disk-total">--</span> GB
-                    </div>
-                </div>
-
-                <!-- Network & Uptime -->
-                <div class="metric-item">
-                    <div class="metric-label">Network (Mbps)</div>
-                    <div class="details-text network-stats">
-                        <span>↑ <span data-metric="net_up">--</span></span>
-                        <span>↓ <span data-metric="net_down">--</span></span>
-                    </div>
-                </div>
-                <div class="metric-item">
-                    <div class="metric-label">Uptime</div>
-                    <div class="details-text">
-                        <span data-metric="uptime">--</span>
-                    </div>
-                </div>
-
-                <!-- GPU -->
-                <div class="metric-item full-width" data-metric="gpu-container" style="display: none;">
-                    <div class="metric-label">GPU</div>
-                    <div class="details-text" data-metric="gpu-details">
-                        <!-- GPU details will be added here -->
-                    </div>
-                </div>
-            </div>
-            <div class="last-update">Last update: <span data-metric="last-update">Never</span></div>
-        `;
         return card;
     }
 
@@ -268,7 +183,11 @@ class ServerMonitor {
                 fill.style.width = `${percentage}%`;
                 valueSpan.textContent = `${percentage.toFixed(1)}%`;
 
-                fill.className = `progress-fill ${percentage > 85 ? 'critical' : percentage > 60 ? 'warning' : 'normal'}`;
+                fill.style.backgroundColor = percentage > 85
+                    ? '#ef4444'
+                    : percentage > 60
+                        ? '#f59e0b'
+                        : '#22c55e';
             }
         };
 
@@ -319,12 +238,13 @@ class ServerMonitor {
         // GPU
         const gpuContainer = element.querySelector('[data-metric="gpu-container"]');
         if (data.gpu.available && data.gpu.gpus?.length > 0) {
-            gpuContainer.style.display = 'block';
+            gpuContainer.classList.remove('hidden');
+            gpuContainer.classList.add('flex');
             const gpuDetails = element.querySelector('[data-metric="gpu-details"]');
             gpuDetails.innerHTML = '';
             data.gpu.gpus.forEach(gpu => {
                 const gpuEl = document.createElement('div');
-                gpuEl.classList.add('gpu-item');
+                gpuEl.className = 'rounded-box bg-base-200 px-3 py-2 text-sm';
                 gpuEl.textContent =
                     `${gpu.name}: Load ${gpu.load.toFixed(1)}% | ` +
                     `Temp ${gpu.temperature}°C | ` +
@@ -332,11 +252,16 @@ class ServerMonitor {
                 gpuDetails.appendChild(gpuEl);
             });
         } else {
-            gpuContainer.style.display = 'none';
+            gpuContainer.classList.remove('flex');
+            gpuContainer.classList.add('hidden');
         }
 
         // Last update time
         updateText('last-update', new Date().toLocaleTimeString());
+        const lastUpdate = element.querySelector('[data-metric="last-update"]');
+        if (lastUpdate) {
+            lastUpdate.classList.remove('text-error');
+        }
     }
 
     showError(serverId, error) {
@@ -345,7 +270,7 @@ class ServerMonitor {
 
         const lastUpdate = server.element.querySelector('[data-metric="last-update"]');
         lastUpdate.textContent = `Error: ${error}`;
-        lastUpdate.style.color = '#ff4757';
+        lastUpdate.classList.add('text-error');
     }
 
     async updateAllServers() {
@@ -369,14 +294,6 @@ class ServerMonitor {
         }
     }
 
-    escapeHtml(value) {
-        return String(value)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#39;');
-    }
 }
 
 // Initialize the monitor

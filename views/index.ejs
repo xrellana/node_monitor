@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
+
     <!-- SEO Meta Tags -->
     <title>Real-Time Server Monitor | Dashboard</title>
     <meta name="description" content="A clean, modern, and real-time dashboard to monitor all your server metrics including CPU, memory, disk, network, and GPU usage.">
@@ -18,437 +18,172 @@
     <meta property="og:description" content="Monitor all your server metrics in real-time with a clean and modern dashboard.">
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-color: #f4f4f9;
-            --header-bg: #ffffff;
-            --card-bg: #ffffff;
-            --text-color: #1a1a1a;
-            --text-secondary: #6b7280;
-            --border-color: #e5e7eb;
-            --accent-color: #3b82f6;
-            --accent-hover: #2563eb;
-            --shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.02);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            line-height: 1.5;
-        }
-
-        .header {
-            background-color: var(--header-bg);
-            border-bottom: 1px solid var(--border-color);
-            padding: 1rem 2rem;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: var(--shadow);
-        }
-
-        .header-content {
-            max-width: 1600px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .header h1 {
-            font-weight: 600;
-            font-size: 1.5rem;
-        }
-
-        .btn {
-            background-color: var(--accent-color);
-            color: white;
-            padding: 0.6rem 1.2rem;
-            border-radius: 0.5rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-            border: none;
-            font-size: 0.9rem;
-        }
-
-        .btn:hover {
-            background-color: var(--accent-hover);
-        }
-
-        .container {
-            max-width: 1600px;
-            margin: 2rem auto;
-            padding: 0 2rem;
-        }
-
-        #servers-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .server-card {
-            background-color: var(--card-bg);
-            border-radius: 0.75rem;
-            border: 1px solid var(--border-color);
-            padding: 1.5rem;
-            box-shadow: var(--shadow);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-
-        .server-card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .server-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 0.5rem;
-        }
-
-        .server-header h3 {
-            font-weight: 600;
-            font-size: 1.1rem;
-            margin-right: 1rem;
-        }
-
-        .server-url {
-            color: var(--text-secondary);
-            font-size: 0.8rem;
-            margin-bottom: 1.5rem;
-            word-break: break-all;
-        }
-
-        .remove-btn {
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            font-size: 1.2rem;
-            cursor: pointer;
-            transition: color 0.2s ease;
-        }
-
-        .remove-btn:hover {
-            color: #ef4444;
-        }
-
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.25rem 1.5rem;
-        }
-
-        .metric-item {
-            display: flex;
-            flex-direction: column;
-            gap: 0.3rem;
-        }
-
-        .metric-item.full-width {
-            grid-column: 1 / -1;
-        }
-
-        .metric-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
-        }
-
-        .metric-label {
-            font-size: 0.8rem;
-            font-weight: 500;
-            color: var(--text-secondary);
-        }
-
-        .details-text {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--text-color);
-        }
-
-        .progress-bar {
-            height: 0.5rem;
-            width: 100%;
-            background: var(--bg-color);
-            border-radius: 0.25rem;
-            overflow: hidden;
-            margin-top: 0.1rem;
-        }
-
-        .progress-fill {
-            height: 100%;
-            transition: width 0.3s ease;
-            border-radius: 0.25rem;
-        }
-
-        .progress-fill.normal { background-color: #22c55e; }
-        .progress-fill.warning { background-color: #f59e0b; }
-        .progress-fill.critical { background-color: #ef4444; }
-
-        .metric-value {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--text-color);
-        }
-
-        .load-average, .network-stats {
-            display: flex;
-            gap: 1rem;
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-
-        .network-stats > span {
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-
-        .network-stats > span > span {
-            color: var(--text-color);
-            font-weight: 600;
-        }
-
-        .last-update {
-            margin-top: 1.5rem;
-            font-size: 0.75rem;
-            color: var(--text-secondary);
-            text-align: right;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(4px);
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal.show {
-            display: flex;
-        }
-
-        .modal-content {
-            background: white;
-            padding: 2rem;
-            border-radius: 0.75rem;
-            width: 90%;
-            max-width: 450px;
-            box-shadow: var(--shadow-lg);
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .modal-header h2 {
-            font-weight: 600;
-        }
-
-        .close {
-            color: var(--text-secondary);
-            font-size: 1.5rem;
-            cursor: pointer;
-        }
-
-        .form-group {
-            margin-bottom: 1rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-            font-size: 0.9rem;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 0.6rem 0.8rem;
-            border: 1px solid var(--border-color);
-            border-radius: 0.5rem;
-            font-size: 1rem;
-        }
-
-        .form-group input:focus {
-            outline: none;
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
-        }
-
-        .form-actions {
-            margin-top: 1.5rem;
-            display: flex;
-            justify-content: flex-end;
-        }
-
-        .footer {
-            text-align: center;
-            padding: 2rem;
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-        }
-
-        .footer a {
-            color: var(--accent-color);
-            text-decoration: none;
-        }
-
-        .footer a:hover {
-            text-decoration: underline;
-        }
-
-        @media (max-width: 768px) {
-            .header { padding: 1rem; }
-            .container { padding: 0 1rem; margin-top: 1rem; }
-            #servers-container { grid-template-columns: 1fr; }
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style type="text/tailwindcss">
+        @theme {
+            --font-sans: "Inter", sans-serif;
         }
     </style>
+    <script>
+        (() => {
+            const root = document.documentElement;
+            const media = window.matchMedia('(prefers-color-scheme: dark)');
+
+            const applyTheme = () => {
+                root.setAttribute('data-theme', media.matches ? 'dim' : 'light');
+            };
+
+            applyTheme();
+            if (typeof media.addEventListener === 'function') {
+                media.addEventListener('change', applyTheme);
+            } else if (typeof media.addListener === 'function') {
+                media.addListener(applyTheme);
+            }
+        })();
+    </script>
 </head>
-<body>
-    <header class="header">
-        <div class="header-content">
-            <h1>Server Monitor</h1>
-            <button class="btn" id="add-server-btn">+ Add Server</button>
+<body class="min-h-screen bg-base-200 text-base-content font-sans">
+    <header class="sticky top-0 z-20 border-b border-base-300 bg-base-100/95 backdrop-blur">
+        <div class="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-4 md:px-8">
+            <h1 class="text-xl font-semibold md:text-2xl">Server Monitor</h1>
+            <button class="btn btn-primary btn-sm md:btn-md" id="add-server-btn">+ Add Server</button>
         </div>
     </header>
 
-    <main class="container">
-        <div id="servers-container">
-            <% servers.forEach(server => { %>
-                <div class="server-card" data-server-id="<%= server.id %>">
-                    <div class="server-header">
-                        <h3><%= server.name %></h3>
-                        <button class="remove-btn" onclick="removeServer(<%= server.id %>)">×</button>
+    <main class="mx-auto w-full max-w-7xl px-4 py-6 md:px-8 md:py-8">
+        <div id="servers-container" class="grid grid-cols-1 gap-6 xl:grid-cols-2 2xl:grid-cols-3"></div>
+
+        <template id="server-card-template">
+            <div class="server-card card border border-base-300 bg-base-100 shadow-sm transition-shadow hover:shadow-md">
+                <div class="card-body gap-4 p-5 md:p-6">
+                    <div class="server-header flex items-start justify-between gap-3">
+                        <h3 class="line-clamp-2 text-lg font-semibold" data-field="server-name"></h3>
+                        <button class="remove-btn btn btn-ghost btn-circle btn-sm text-base-content/70 hover:text-error" data-action="remove-server" aria-label="Remove server">×</button>
                     </div>
-                    <div class="server-url"><%= server.url %></div>
-                    <div class="metrics-grid">
-                        <!-- CPU -->
-                        <div class="metric-item">
-                            <div class="metric-header">
-                                <span class="metric-label">CPU Usage</span>
-                                <span class="metric-value" data-metric="cpu-percent">--</span>
+                    <div class="server-url text-xs text-base-content/60 break-all" data-field="server-url"></div>
+
+                    <div class="metrics-grid grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2">
+                        <div class="metric-item flex flex-col gap-1.5">
+                            <div class="metric-header flex items-center justify-between">
+                                <span class="metric-label text-xs font-medium text-base-content/70">CPU Usage</span>
+                                <span class="metric-value text-sm font-semibold" data-metric="cpu-percent">--</span>
                             </div>
-                            <div class="progress-bar">
-                                <div class="progress-fill" data-metric="cpu-percent-fill"></div>
+                            <div class="progress-bar mt-0.5 h-2 w-full overflow-hidden rounded-full bg-base-300">
+                                <div class="progress-fill h-full rounded-full transition-all duration-300" data-metric="cpu-percent-fill"></div>
                             </div>
                         </div>
-                        <div class="metric-item">
-                            <div class="metric-label">Load Average (1/5/15m)</div>
-                            <div class="details-text load-average">
+                        <div class="metric-item flex flex-col gap-1.5">
+                            <div class="metric-label text-xs font-medium text-base-content/70">Load Average (1/5/15m)</div>
+                            <div class="details-text load-average flex gap-3 text-sm font-semibold">
                                 <span data-metric="load1">--</span>
                                 <span data-metric="load5">--</span>
                                 <span data-metric="load15">--</span>
                             </div>
                         </div>
 
-                        <!-- Memory -->
-                        <div class="metric-item">
-                            <div class="metric-header">
-                                <span class="metric-label">Memory</span>
-                                <span class="metric-value" data-metric="mem-percent">--</span>
+                        <div class="metric-item flex flex-col gap-1.5">
+                            <div class="metric-header flex items-center justify-between">
+                                <span class="metric-label text-xs font-medium text-base-content/70">Memory</span>
+                                <span class="metric-value text-sm font-semibold" data-metric="mem-percent">--</span>
                             </div>
-                            <div class="progress-bar">
-                                <div class="progress-fill" data-metric="mem-percent-fill"></div>
+                            <div class="progress-bar mt-0.5 h-2 w-full overflow-hidden rounded-full bg-base-300">
+                                <div class="progress-fill h-full rounded-full transition-all duration-300" data-metric="mem-percent-fill"></div>
                             </div>
                         </div>
-                        <div class="metric-item">
-                            <div class="metric-label">Used / Total</div>
-                            <div class="details-text">
+                        <div class="metric-item flex flex-col gap-1.5">
+                            <div class="metric-label text-xs font-medium text-base-content/70">Used / Total</div>
+                            <div class="details-text text-sm font-semibold">
                                 <span data-metric="mem-used">--</span> /
                                 <span data-metric="mem-total">--</span> GB
                             </div>
                         </div>
 
-                        <!-- Disk -->
-                        <div class="metric-item">
-                            <div class="metric-header">
-                                <span class="metric-label">Disk</span>
-                                <span class="metric-value" data-metric="disk-percent">--</span>
+                        <div class="metric-item flex flex-col gap-1.5">
+                            <div class="metric-header flex items-center justify-between">
+                                <span class="metric-label text-xs font-medium text-base-content/70">Swap</span>
+                                <span class="metric-value text-sm font-semibold" data-metric="swap-percent">--</span>
                             </div>
-                            <div class="progress-bar">
-                                <div class="progress-fill" data-metric="disk-percent-fill"></div>
+                            <div class="progress-bar mt-0.5 h-2 w-full overflow-hidden rounded-full bg-base-300">
+                                <div class="progress-fill h-full rounded-full transition-all duration-300" data-metric="swap-percent-fill"></div>
                             </div>
                         </div>
-                        <div class="metric-item">
-                            <div class="metric-label">Used / Total</div>
-                            <div class="details-text">
+                        <div class="metric-item flex flex-col gap-1.5">
+                            <div class="metric-label text-xs font-medium text-base-content/70">Used / Total</div>
+                            <div class="details-text text-sm font-semibold">
+                                <span data-metric="swap-used">--</span> /
+                                <span data-metric="swap-total">--</span> GB
+                            </div>
+                        </div>
+
+                        <div class="metric-item flex flex-col gap-1.5">
+                            <div class="metric-header flex items-center justify-between">
+                                <span class="metric-label text-xs font-medium text-base-content/70">Disk</span>
+                                <span class="metric-value text-sm font-semibold" data-metric="disk-percent">--</span>
+                            </div>
+                            <div class="progress-bar mt-0.5 h-2 w-full overflow-hidden rounded-full bg-base-300">
+                                <div class="progress-fill h-full rounded-full transition-all duration-300" data-metric="disk-percent-fill"></div>
+                            </div>
+                        </div>
+                        <div class="metric-item flex flex-col gap-1.5">
+                            <div class="metric-label text-xs font-medium text-base-content/70">Used / Total</div>
+                            <div class="details-text text-sm font-semibold">
                                 <span data-metric="disk-used">--</span> /
                                 <span data-metric="disk-total">--</span> GB
                             </div>
                         </div>
 
-                        <!-- Network & Uptime -->
-                        <div class="metric-item">
-                            <div class="metric-label">Network (Mbps)</div>
-                            <div class="details-text network-stats">
-                                <span>↑ <span data-metric="net_up">--</span></span>
-                                <span>↓ <span data-metric="net_down">--</span></span>
+                        <div class="metric-item flex flex-col gap-1.5">
+                            <div class="metric-label text-xs font-medium text-base-content/70">Network (Mbps)</div>
+                            <div class="details-text network-stats flex gap-4 text-sm font-semibold">
+                                <span class="text-base-content/70">↑ <span class="text-base-content" data-metric="net_up">--</span></span>
+                                <span class="text-base-content/70">↓ <span class="text-base-content" data-metric="net_down">--</span></span>
                             </div>
                         </div>
-                        <div class="metric-item">
-                            <div class="metric-label">Uptime</div>
-                            <div class="details-text">
+                        <div class="metric-item flex flex-col gap-1.5">
+                            <div class="metric-label text-xs font-medium text-base-content/70">Uptime</div>
+                            <div class="details-text text-sm font-semibold">
                                 <span data-metric="uptime">--</span>
                             </div>
                         </div>
 
-                        <!-- GPU -->
-                        <div class="metric-item full-width" data-metric="gpu-container" style="display: none;">
-                            <div class="metric-label">GPU</div>
-                            <div class="details-text" data-metric="gpu-details">
-                                <!-- GPU details will be added here -->
-                            </div>
+                        <div class="metric-item full-width hidden flex-col gap-1.5 sm:col-span-2" data-metric="gpu-container">
+                            <div class="metric-label text-xs font-medium text-base-content/70">GPU</div>
+                            <div class="details-text flex flex-col gap-1 text-sm font-semibold" data-metric="gpu-details"></div>
                         </div>
                     </div>
-                    <div class="last-update">Last update: <span data-metric="last-update">Never</span></div>
+
+                    <div class="last-update text-right text-xs text-base-content/60">Last update: <span data-metric="last-update">Never</span></div>
                 </div>
-            <% }); %>
-        </div>
+            </div>
+        </template>
     </main>
 
-    <div id="add-server-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Add New Server</h2>
-                <span class="close">&times;</span>
+    <div id="add-server-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-base-content/40 p-4 backdrop-blur-sm">
+        <div class="modal-content card w-full max-w-md border border-base-300 bg-base-100 shadow-xl">
+            <div class="card-body p-6">
+                <div class="modal-header mb-2 flex items-center justify-between">
+                    <h2 class="text-xl font-semibold">Add New Server</h2>
+                    <button class="close btn btn-ghost btn-circle btn-sm" aria-label="Close modal">✕</button>
+                </div>
+                <form id="add-server-form" class="space-y-4">
+                    <div class="form-group">
+                        <label for="server-name" class="label px-0 pb-1 pt-0 text-sm font-medium">Server Name</label>
+                        <input type="text" id="server-name" class="input input-bordered w-full" placeholder="e.g., Production Server" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="server-url" class="label px-0 pb-1 pt-0 text-sm font-medium">Agent URL</label>
+                        <input type="url" id="server-url" class="input input-bordered w-full" placeholder="http://192.168.1.100:5000/metrics" required>
+                    </div>
+                    <div class="form-actions flex justify-end pt-2">
+                        <button type="submit" class="btn btn-primary">Add Server</button>
+                    </div>
+                </form>
             </div>
-            <form id="add-server-form">
-                <div class="form-group">
-                    <label for="server-name">Server Name</label>
-                    <input type="text" id="server-name" placeholder="e.g., Production Server" required>
-                </div>
-                <div class="form-group">
-                    <label for="server-url">Agent URL</label>
-                    <input type="url" id="server-url" placeholder="http://192.168.1.100:5000/metrics" required>
-                </div>
-                <div class="form-actions">
-                    <button type="submit" class="btn">Add Server</button>
-                </div>
-            </form>
         </div>
     </div>
 
-    <footer class="footer">
+    <footer class="py-8 text-center text-sm text-base-content/70">
         <p>&copy; 2025 Server Monitor</p>
     </footer>
 

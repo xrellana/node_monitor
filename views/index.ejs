@@ -94,19 +94,16 @@
         <div class="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-4 md:px-8">
             <h1 class="text-xl font-semibold md:text-2xl">Server Monitor</h1>
             <div class="flex items-center gap-2">
-                <div class="join" role="group" aria-label="Theme controls">
-                    <button type="button" class="btn btn-sm join-item" id="theme-auto-btn" title="Follow system theme" aria-label="Follow system theme">Auto</button>
-                    <div class="btn btn-sm join-item cursor-default px-2">
-                        <span aria-hidden="true">☀️</span>
-                        <input
-                            id="theme-toggle"
-                            type="checkbox"
-                            class="toggle toggle-xs mx-2"
-                            title="Toggle light or dark theme"
-                            aria-label="Toggle light or dark theme"
-                        >
-                        <span aria-hidden="true">🌙</span>
-                    </div>
+                <div class="relative flex items-center p-1 rounded-full bg-base-200/80 border border-base-300 shadow-inner backdrop-blur-md" role="group" aria-label="Theme controls">
+                    <button type="button" id="theme-light-btn" class="relative z-10 w-8 h-8 flex items-center justify-center rounded-full transition-all duration-300 text-base-content/50 hover:text-base-content" title="Light theme" aria-label="Light theme">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" /></svg>
+                    </button>
+                    <button type="button" id="theme-auto-btn" class="relative z-10 w-8 h-8 flex items-center justify-center rounded-full transition-all duration-300 text-base-content/50 hover:text-base-content" title="System theme" aria-label="System theme">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25m18 0A2.25 2.25 0 0 0 18.75 3H5.25A2.25 2.25 0 0 0 3 5.25m18 0V12a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 12V5.25" /></svg>
+                    </button>
+                    <button type="button" id="theme-dark-btn" class="relative z-10 w-8 h-8 flex items-center justify-center rounded-full transition-all duration-300 text-base-content/50 hover:text-base-content" title="Dark theme" aria-label="Dark theme">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z" /></svg>
+                    </button>
                 </div>
                 <button class="btn btn-primary btn-sm md:btn-md" id="add-server-btn">+ Add Server</button>
             </div>
@@ -252,38 +249,44 @@
     <script>
         (() => {
             const controls = window.__themeControls;
-            const autoButton = document.getElementById('theme-auto-btn');
-            const toggle = document.getElementById('theme-toggle');
-            if (!controls || !autoButton || !toggle) return;
+            const lightBtn = document.getElementById('theme-light-btn');
+            const autoBtn = document.getElementById('theme-auto-btn');
+            const darkBtn = document.getElementById('theme-dark-btn');
+            if (!controls || !lightBtn || !autoBtn || !darkBtn) return;
 
             const normalizePreference = (value) => {
                 if (value === 'light' || value === 'dark' || value === 'system') return value;
                 return 'system';
             };
 
-            const syncControls = (preference, resolvedTheme) => {
+            const syncControls = (preference) => {
                 const normalized = normalizePreference(preference);
-                const activeTheme = resolvedTheme || document.documentElement.getAttribute('data-theme');
-                const isAuto = normalized === 'system';
-                const isDark = activeTheme === 'dark';
+                
+                const activeClasses = ['bg-base-100', 'text-base-content', 'shadow-sm', 'scale-100'];
+                const inactiveClasses = ['text-base-content/50', 'hover:text-base-content', 'scale-95'];
 
-                autoButton.classList.toggle('btn-active', isAuto);
-                autoButton.setAttribute('aria-pressed', String(isAuto));
-                toggle.checked = isDark;
+                [lightBtn, autoBtn, darkBtn].forEach(btn => {
+                    btn.classList.remove(...activeClasses);
+                    btn.classList.add(...inactiveClasses);
+                });
+
+                let activeBtn;
+                if (normalized === 'light') activeBtn = lightBtn;
+                else if (normalized === 'dark') activeBtn = darkBtn;
+                else activeBtn = autoBtn;
+
+                activeBtn.classList.remove(...inactiveClasses);
+                activeBtn.classList.add(...activeClasses);
             };
 
             syncControls(controls.getPreference());
 
-            autoButton.addEventListener('click', () => {
-                controls.setPreference('system');
-            });
-
-            toggle.addEventListener('change', () => {
-                controls.setPreference(toggle.checked ? 'dark' : 'light');
-            });
+            lightBtn.addEventListener('click', () => controls.setPreference('light'));
+            autoBtn.addEventListener('click', () => controls.setPreference('system'));
+            darkBtn.addEventListener('click', () => controls.setPreference('dark'));
 
             document.addEventListener('theme-preference-change', (event) => {
-                syncControls(event.detail?.preference, event.detail?.theme);
+                syncControls(event.detail?.preference);
             });
         })();
     </script>

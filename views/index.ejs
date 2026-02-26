@@ -94,10 +94,19 @@
         <div class="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-4 md:px-8">
             <h1 class="text-xl font-semibold md:text-2xl">Server Monitor</h1>
             <div class="flex items-center gap-2">
-                <div class="join" role="group" aria-label="Theme preference">
-                    <button type="button" class="btn btn-sm join-item" data-theme-option="system" title="System theme" aria-label="System theme">🖥️</button>
-                    <button type="button" class="btn btn-sm join-item" data-theme-option="light" title="Light theme" aria-label="Light theme">☀️</button>
-                    <button type="button" class="btn btn-sm join-item" data-theme-option="dark" title="Dark theme" aria-label="Dark theme">🌙</button>
+                <div class="join" role="group" aria-label="Theme controls">
+                    <button type="button" class="btn btn-sm join-item" id="theme-auto-btn" title="Follow system theme" aria-label="Follow system theme">Auto</button>
+                    <div class="btn btn-sm join-item cursor-default px-2">
+                        <span aria-hidden="true">☀️</span>
+                        <input
+                            id="theme-toggle"
+                            type="checkbox"
+                            class="toggle toggle-xs mx-2"
+                            title="Toggle light or dark theme"
+                            aria-label="Toggle light or dark theme"
+                        >
+                        <span aria-hidden="true">🌙</span>
+                    </div>
                 </div>
                 <button class="btn btn-primary btn-sm md:btn-md" id="add-server-btn">+ Add Server</button>
             </div>
@@ -243,33 +252,38 @@
     <script>
         (() => {
             const controls = window.__themeControls;
-            const buttons = Array.from(document.querySelectorAll('[data-theme-option]'));
-            if (!controls || buttons.length === 0) return;
+            const autoButton = document.getElementById('theme-auto-btn');
+            const toggle = document.getElementById('theme-toggle');
+            if (!controls || !autoButton || !toggle) return;
 
-            const validPreferences = new Set(['system', 'light', 'dark']);
-            const normalizePreference = (value) => validPreferences.has(value) ? value : 'system';
-
-            const setActiveButton = (preference) => {
-                const normalized = normalizePreference(preference);
-                buttons.forEach((button) => {
-                    const active = button.dataset.themeOption === normalized;
-                    button.classList.toggle('btn-active', active);
-                    button.setAttribute('aria-pressed', String(active));
-                });
+            const normalizePreference = (value) => {
+                if (value === 'light' || value === 'dark' || value === 'system') return value;
+                return 'system';
             };
 
-            setActiveButton(controls.getPreference());
+            const syncControls = (preference, resolvedTheme) => {
+                const normalized = normalizePreference(preference);
+                const activeTheme = resolvedTheme || document.documentElement.getAttribute('data-theme');
+                const isAuto = normalized === 'system';
+                const isDark = activeTheme === 'dark';
 
-            buttons.forEach((button) => {
-                button.addEventListener('click', () => {
-                    const preference = normalizePreference(button.dataset.themeOption);
-                    controls.setPreference(preference);
-                    setActiveButton(preference);
-                });
+                autoButton.classList.toggle('btn-active', isAuto);
+                autoButton.setAttribute('aria-pressed', String(isAuto));
+                toggle.checked = isDark;
+            };
+
+            syncControls(controls.getPreference());
+
+            autoButton.addEventListener('click', () => {
+                controls.setPreference('system');
+            });
+
+            toggle.addEventListener('change', () => {
+                controls.setPreference(toggle.checked ? 'dark' : 'light');
             });
 
             document.addEventListener('theme-preference-change', (event) => {
-                setActiveButton(event.detail?.preference);
+                syncControls(event.detail?.preference, event.detail?.theme);
             });
         })();
     </script>
